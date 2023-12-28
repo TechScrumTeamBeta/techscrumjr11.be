@@ -1,0 +1,93 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCOUNT_ID = '114764874165'
+        AWS_DEFAULT_REGION = 'ap-southeast-2'
+        LAMBDA_NAME = 'backupTFstate'
+        LAMBDA_BUCKET_NAME = 's3://techscrum-p3'
+    }
+
+    parameters {
+        booleanParam defaultValue:false, name:'blCreateLambda'
+        booleanParam defaultValue:false, name:'blUpdateLambdaCode'
+        booleanParam defaultValue:false, name:'blTestLambda'
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Terraform Creat Lambda') {
+            when { expression { return params.blCreateLambda } }
+            steps {
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh '''
+                    cd application/lambda/backupTFstate
+                    terraform init
+                    terraform validate
+                    terraform plan
+                    terraform apply --auto-approve
+                    echo 'Creating Lambda...'
+                    '''
+                }
+            }
+        }
+
+        stage('Update Lambda Code') {
+            when { expression { return params.blUpdateLambdaCode } }
+            steps {
+                echo 'Create a deployment package && Update the Lambda function'
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh '''
+                    cd application/lambda/backupTFstate/lambda_code
+                    rm -f !backupTFstate.py
+                    zip -r backupTFstate.zip *
+                    aws s3 cp backupTFstate.zip ${LAMBDA_BUCKET_NAME}
+
+                    aws lambda update-function-code --function-name backupTFstate \
+                    --s3-bucket techscrum-p3 --s3-key backupTFstate.zip
+                   '''
+                }
+                sleep 10
+            }
+        }
+
+        stage('Test Lambda') {
+            when { expression { return params.blTestLambda } }
+            steps {
+                withAWS(credentials: "$AWS_Creds", region: 'ap-southeast-2') {
+                    echo 'List lambda functions'
+                    sh 'aws lambda list-functions --max-items 10'
+                    sh 'aws lambda get-function --function-name &{LAMBDA_NAME}'
+
+                    echo 'Invoke test'
+                    sh 'aws lambda invoke --function-name &{LAMBDA_NAME} out --log-type Tail'
+                }
+            }
+        }
+
+        stage('Destroy Lambda') {
+            steps {
+                timeout(time: 3, unit: 'HOURS') {
+                  input message: 'Destroy Lambda Resources?'
+                }
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS'){
+                  sh '''
+                  cd application/lambda/backupTFstate
+                  terraform init
+                  terraform destroy --auto-approve
+                  echo 'Destroying Lambda Resources...'
+                  '''
+                }
+            }
+        }
+    }
+
+    post {
+       
+    }
+}

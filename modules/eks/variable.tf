@@ -1,0 +1,11 @@
+variable "projectName" {}
+variable "environment" {}
+variable "public_subnets_ids" {}
+variable "instance_types" {}
+variable "cluster_version" {}
+variable "k8s_cluster_name" {}
+variable "eks_cluster_role_arn" {}
+variable "nodes_arn" {}
+variable "eks_node_policy" {}
+variable "eks_cni_policy_attachment" {}
+variable "eks_container_readonly_attachment" {}

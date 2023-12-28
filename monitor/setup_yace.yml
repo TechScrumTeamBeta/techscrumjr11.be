@@ -1,0 +1,34 @@
+- name: Create directory
+  file:
+    path: /home/ec2-user/yace
+    state: directory
+
+- name: Clone YACE repository
+  ansible.builtin.git:
+    repo: https://github.com/nerdswords/yet-another-cloudwatch-exporter.git
+    dest: /home/ec2-user/yace
+    force: yes
+
+- name: Overwrite yace-config.yaml file with our version
+  ansible.builtin.template:
+    src: yace-config.yaml.j2
+    dest: /home/ec2-user/yace/docker-compose/yace-config.yaml
+
+- name: Overwrite docker-compose.yaml file with our version
+  ansible.builtin.template:
+    src: docker-compose.yaml.j2
+    dest: /home/ec2-user/yace/docker-compose/docker-compose.yaml
+
+- name: Build Docker images using docker-compose
+  ansible.builtin.command:
+    chdir: /home/ec2-user/yace/docker-compose
+    cmd: sudo /usr/local/bin/docker-compose build
+  become: yes
+  become_user: ec2-user
+
+- name: Run Docker containers in detached mode
+  ansible.builtin.command:
+    chdir: /home/ec2-user/yace/docker-compose
+    cmd: sudo /usr/local/bin/docker-compose up -d
+  become: yes
+  become_user: ec2-user

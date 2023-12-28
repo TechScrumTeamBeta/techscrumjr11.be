@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('SonarQube analysis') {
+            environment { scannerHome = tool 'SonarScanner'}
+            steps {
+                withSonarQubeEnv('sonarqube-9.9') {
+                  sh "${scannerHome}/bin/sonar-scanner"
+                }
+            }
+        }
+
+        stage('Qulity Gate') {
+            steps {
+                script {
+                    def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                        }
+                }
+             }
+        }
+    }
+
+    post {
+        always {
+             cleanWs()
+        }
+    }
+}

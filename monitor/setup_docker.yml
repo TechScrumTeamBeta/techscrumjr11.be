@@ -1,0 +1,34 @@
+- name: Start Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Add ec2-user to docker group
+  user:
+    name: ec2-user
+    groups: docker
+    append: yes
+
+- name: Get OS info
+  command:
+    cmd: uname -s
+  register: uname_s
+  changed_when: false
+
+- name: Get architecture info
+  command:
+    cmd: uname -m
+  register: uname_m
+  changed_when: false
+
+- name: Download and install Docker Compose
+  get_url:
+    url: https://github.com/docker/compose/releases/download/1.28.2/docker-compose-{{ uname_s.stdout }}-{{ uname_m.stdout }}
+    dest: /usr/local/bin/docker-compose
+    mode: "0755"
+    
+- name: Restart Docker service
+  systemd:
+    state: restarted
+    name: docker

@@ -65,13 +65,13 @@ pipeline {
         //     }
         // }
 
-        stage('Terraform plan') {
+        stage('Terraform plan uat') {
             steps {
              
                           echo 'Planning...'
                 sh '''
                 cd application/ecs-backend
-                terraform plan
+                terraform plan -var-file=uat.tfvars
                 '''
             }
         }

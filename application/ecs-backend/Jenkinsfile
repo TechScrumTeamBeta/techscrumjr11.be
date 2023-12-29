@@ -56,11 +56,11 @@ pipeline {
                 sh 'terraform validate'
             }
         }
-        stage('Create or Select Workspace UAT') {
-            steps {
-                sh 'terraform workspace new uat || terraform workspace select uat'
-            }
-        }
+        // stage('Create or Select Workspace UAT') {
+        //     steps {
+        //         sh 'terraform workspace new uat || terraform workspace select uat'
+        //     }
+        // }
 
         // stage('Terraform plan') {
         //     steps {
@@ -89,8 +89,7 @@ pipeline {
                     cd application/ecs-backend/prod
                     terraform init
                     terraform validate
-                    terraform workspace new prod || terraform workspace select prod
-                    terraform plan
+
                     terraform ${tfOperation} -var-file=prod.tfvars --auto-approve
                     echo 'Creating in PROD...
                     '''

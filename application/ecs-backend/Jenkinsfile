@@ -71,10 +71,10 @@ pipeline {
         stage('Terraform plan uat') {
             steps {
                 echo 'Planning...'
-            // sh '''
-            // cd application/ecs-backend
-            // terraform plan -var-file=uat.tfvars
-            // '''
+                sh '''
+            cd application/ecs-backend
+            terraform plan -var-file=uat.tfvars
+            '''
             }
         }
 
@@ -93,6 +93,7 @@ pipeline {
                                 cd application/ecs-backend
                                 terraform init
                                 terraform validate
+                                terraform plan -var-file=uat.tfvars
                                 terraform ${TFOperation} -var-file=uat.tfvars --auto-approve
                             '''
                         }
@@ -113,6 +114,7 @@ pipeline {
                                     cd application/ecs-backend/prod
                                     terraform init
                                     terraform validate
+                                     terraform plan -var-file=prod.tfvars
                                     terraform ${TFOperation} -var-file=prod.tfvars --auto-approve
                                 '''
                             }

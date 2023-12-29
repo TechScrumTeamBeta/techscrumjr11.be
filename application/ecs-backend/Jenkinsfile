@@ -53,7 +53,7 @@ pipeline {
         stage('Terraform Validation') {
             steps {
                 echo 'Validating...'
-                                sh '''
+                sh '''
                 cd application/ecs-backend
                 terraform validate
                 '''
@@ -67,12 +67,11 @@ pipeline {
 
         stage('Terraform plan uat') {
             steps {
-             
-                          echo 'Planning...'
-                sh '''
-                cd application/ecs-backend
-                terraform plan -var-file=uat.tfvars
-                '''
+                echo 'Planning...'
+            // sh '''
+            // cd application/ecs-backend
+            // terraform plan -var-file=uat.tfvars
+            // '''
             }
         }
 

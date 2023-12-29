@@ -4,12 +4,16 @@ pipeline {
 
     parameters {
         string(name: 'AWS_CREDENTIAL_ID', defaultValue: 'markwang access', description: 'The ID of the AWS credentials to use')
-
         string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'The Git branch to build and deploy')
         choice(
             name: 'TFOperation',
             choices: ['apply', 'destroy'],
-            description: 'apply for creating  destroy for releasing  the resources'
+            description: 'apply for creating, destroy for releasing the resources'
+        )
+        choice(
+            name: 'Environment',
+            choices: ['uat', 'prod'],
+            description: 'Select the environment'
         )
     }
 
@@ -75,37 +79,49 @@ pipeline {
             }
         }
 
-        stage('Creare or Delete Resouces in UAT') {
+        stage('Execute Terraform Based on Environment') {
             steps {
-                // ehco 'Creating in UAT...'
-                sh '''
-                #!/bin/bash
-               tfOperation=${TFOperation}
-            cd application/ecs-backend
-            terraform $tfOperation -var-file=uat.tfvars --auto-approve
-                '''
-            }
-        }
-        stage('Create or Delete Resources in Production') {
-            steps {
-                timeout(time: 4, unit: 'HOURS') {
-                    input message: 'Create terraform resources in prod?'
-                }
-                withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: params.AWS_CREDENTIAL_ID,
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
-                    sh '''
-                    cd application/ecs-backend/prod
-                    terraform init
-                    terraform validate
-
-                    terraform ${tfOperation} -var-file=prod.tfvars --auto-approve
-                    // echo 'Creating in PROD...
-                    '''
+                script {
+                    if (params.Environment == 'uat') {
+                        withCredentials([[
+                            $class: 'AmazonWebServicesCredentialsBinding',
+                            credentialsId: params.AWS_CREDENTIAL_ID,
+                            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                        ]]) {
+                            sh '''
+                                #!/bin/bash
+                                cd application/ecs-backend
+                                terraform init
+                                terraform validate
+                                terraform ${TFOperation} -var-file=uat.tfvars --auto-approve
+                            '''
+                        }
+                    } else if (params.Environment == 'prod') {
+                        // 检查当前用户是否是 'leoliu'
+                        if (currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause).getUserId().equals('leoliu')) {
+                            timeout(time: 4, unit: 'HOURS') {
+                                input message: 'Create terraform resources in prod?', ok: 'Deploy'
+                            }
+                            withCredentials([[
+                                $class: 'AmazonWebServicesCredentialsBinding',
+                                credentialsId: params.AWS_CREDENTIAL_ID,
+                                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                            ]]) {
+                                sh '''
+                                    #!/bin/bash
+                                    cd application/ecs-backend/prod
+                                    terraform init
+                                    terraform validate
+                                    terraform ${TFOperation} -var-file=prod.tfvars --auto-approve
+                                '''
+                            }
+                        } else {
+                            error "Production environment can only be deployed by user 'leoliu'"
+                        }
                     }
+                }
             }
         }
     }

@@ -16,10 +16,6 @@ pipeline {
     environment {
         AWS_ACCOUNT_ID = '650635451238'
         AWS_DEFAULT_REGION = 'ap-southeast-2'
-        DOCKER_IMAGE_NAME = 'techscrum'
-        DOCKER_IMAGE_TAG = 'latest'
-        DOCKERFILE_PATH = '.'
-        ECR_REPO_URL = '650635451238.dkr.ecr.ap-southeast-2.amazonaws.com/techscrum_backend_ecr' // Update with your ECR repository URL
     }
 
     tools {
@@ -66,11 +62,11 @@ pipeline {
             }
         }
 
-        stage('Terraform plan') {
-            steps {
-                sh 'terraform plan'
-            }
-        }
+        // stage('Terraform plan') {
+        //     steps {
+        //         sh 'terraform plan'
+        //     }
+        // }
 
         stage('Creare or Delete Resouces in UAT') {
             steps {

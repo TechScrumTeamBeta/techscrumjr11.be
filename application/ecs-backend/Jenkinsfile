@@ -9,7 +9,7 @@ pipeline {
         choice(
             name: 'TFOperation',
             choices: ['apply', 'destroy'],
-            description: 'apply for creating resources destroy for releasing all the resources'
+            description: 'apply for creating  destroy for releasing  the resources'
         )
     }
 
@@ -80,8 +80,9 @@ pipeline {
                 // ehco 'Creating in UAT...'
                 sh '''
                 #!/bin/bash
-                cd application/ecs-backend
-                terraform ${tfOperation} -var-file=uat.tfvars --auto-approve
+               tfOperation=${TFOperation}
+            cd application/ecs-backend
+            terraform $tfOperation -var-file=uat.tfvars --auto-approve
                 '''
             }
         }

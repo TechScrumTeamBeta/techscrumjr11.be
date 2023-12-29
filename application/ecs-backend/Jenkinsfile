@@ -62,15 +62,16 @@ pipeline {
         //     }
         // }
 
-        // stage('Terraform plan') {
-        //     steps {
-        //         sh 'terraform plan'
-        //     }
-        // }
+        stage('Terraform plan') {
+            steps {
+                echo 'plan...'
+                sh 'terraform plan'
+            }
+        }
 
         stage('Creare or Delete Resouces in UAT') {
             steps {
-                ehco 'Creating in UAT...'
+                // ehco 'Creating in UAT...'
                 sh 'terraform ${tfOperation} -var-file=uat.tfvars --auto-approve'
             }
         }
@@ -91,7 +92,7 @@ pipeline {
                     terraform validate
 
                     terraform ${tfOperation} -var-file=prod.tfvars --auto-approve
-                    echo 'Creating in PROD...
+                    // echo 'Creating in PROD...
                     '''
                     }
             }

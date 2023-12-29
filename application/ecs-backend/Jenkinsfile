@@ -18,7 +18,6 @@ pipeline {
     }
 
     environment {
-        AWS_ACCOUNT_ID = '650635451238'
         AWS_DEFAULT_REGION = 'ap-southeast-2'
     }
 

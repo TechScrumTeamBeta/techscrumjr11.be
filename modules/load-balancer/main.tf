@@ -1,6 +1,6 @@
 # Create application load balancer
 resource "aws_lb" "alb" {
-  name                       = "techscrum-lb"
+  name                       = "techscrum-lb-${var.environment}"
   internal                   = false
   load_balancer_type         = "application"
   security_groups            = [var.alb_security_group_id]
@@ -14,7 +14,7 @@ resource "aws_lb" "alb" {
 
 # Create target group and attach to load balancer
 resource "aws_lb_target_group" "tg" {
-  name        = "techscrum-http-alb-tg"
+  name        = "techscrum-http-alb-tg-${var.environment}"
   target_type = "ip"
   port        = 8000
   protocol    = "HTTP"

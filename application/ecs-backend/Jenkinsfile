@@ -1,12 +1,11 @@
-pipeline {
-    agent any
 
-    environment {
-        AWS_ACCOUNT_ID = '650635451238'
-        AWS_DEFAULT_REGION = 'ap-southeast-2'
-    }
+pipeline {
+    agent { label 'jenkins_slave' }
 
     parameters {
+        string(name: 'AWS_CREDENTIAL_ID', defaultValue: 'markwang access', description: 'The ID of the AWS credentials to use')
+
+        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'The Git branch to build and deploy')
         choice(
             name: 'TFOperation',
             choices: ['apply', 'destroy'],
@@ -14,20 +13,43 @@ pipeline {
         )
     }
 
+    environment {
+        AWS_ACCOUNT_ID = '650635451238'
+        AWS_DEFAULT_REGION = 'ap-southeast-2'
+        DOCKER_IMAGE_NAME = 'techscrum'
+        DOCKER_IMAGE_TAG = 'latest'
+        DOCKERFILE_PATH = '.'
+        ECR_REPO_URL = '650635451238.dkr.ecr.ap-southeast-2.amazonaws.com/techscrum_backend_ecr' // Update with your ECR repository URL
+    }
+
+    tools {
+        nodejs 'jenkinsnode'
+    }
+
     stages {
-        stage('Clone Repo') {
+        stage('Checkout') {
             steps {
-                checkout scm
+                script {
+                    // Checkout the specified branch from GitHub
+                    checkout([$class: 'GitSCM', branches: [[name: params.GIT_BRANCH]], userRemoteConfigs: [[url: 'https://github.com/TechScrumTeamBeta/techscrumjr11.be']]])
+                }
             }
         }
 
         stage('Terraform Init') {
             steps {
-                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
-                    sh '''
+                script {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: params.AWS_CREDENTIAL_ID,
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                    ]]) {
+                        sh '''
                     cd application/ecs-backend
-                    terraform init -backend-config=backend-uat.hcl
+                    terraform init
                     '''
+                    }
                 }
             }
         }
@@ -38,7 +60,6 @@ pipeline {
                 sh 'terraform validate'
             }
         }
-
         stage('Create or Select Workspace UAT') {
             steps {
                 sh 'terraform workspace new uat || terraform workspace select uat'
@@ -57,23 +78,27 @@ pipeline {
                 sh 'terraform ${tfOperation} -var-file=uat.tfvars --auto-approve'
             }
         }
-
         stage('Create or Delete Resources in Production') {
             steps {
                 timeout(time: 4, unit: 'HOURS') {
                     input message: 'Create terraform resources in prod?'
                 }
-                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: params.AWS_CREDENTIAL_ID,
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                    ]]) {
                     sh '''
-                    cd application/ecs-backend
-                    terraform init -backend-config=backend-prod.hcl
+                    cd application/ecs-backend/prod
+                    terraform init
                     terraform validate
                     terraform workspace new prod || terraform workspace select prod
                     terraform plan
                     terraform ${tfOperation} -var-file=prod.tfvars --auto-approve
                     echo 'Creating in PROD...
                     '''
-                }
+                    }
             }
         }
     }

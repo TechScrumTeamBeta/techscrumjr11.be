@@ -66,7 +66,7 @@ resource "aws_iam_role" "ecs_task_role" {
 
 
 resource "aws_iam_policy" "ssm_app_policy" {
-  name        = "SSMAppPolicy-leo"
+  name        = "${var.environment}-SSMAppPolicy-leo"
   description = "Policy for SSM parameters under /techscrum/"
 
   policy = jsonencode({

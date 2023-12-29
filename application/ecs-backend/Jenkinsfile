@@ -53,7 +53,10 @@ pipeline {
         stage('Terraform Validation') {
             steps {
                 echo 'Validating...'
-                sh 'terraform validate'
+                                sh '''
+                cd application/ecs-backend
+                terraform validate
+                '''
             }
         }
         // stage('Create or Select Workspace UAT') {
@@ -64,15 +67,22 @@ pipeline {
 
         stage('Terraform plan') {
             steps {
-                echo 'plan...'
-                sh 'terraform plan'
+             
+                          echo 'Planning...'
+                sh '''
+                cd application/ecs-backend
+                terraform plan
+                '''
             }
         }
 
         stage('Creare or Delete Resouces in UAT') {
             steps {
                 // ehco 'Creating in UAT...'
-                sh 'terraform ${tfOperation} -var-file=uat.tfvars --auto-approve'
+                sh '''
+                cd application/ecs-backend
+                terraform ${params.TFOperation} -var-file=uat.tfvars --auto-approve
+                '''
             }
         }
         stage('Create or Delete Resources in Production') {

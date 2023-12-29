@@ -81,7 +81,7 @@ pipeline {
                 sh '''
                 #!/bin/bash
                 cd application/ecs-backend
-                terraform apply -var-file=uat.tfvars --auto-approve
+                terraform ${tfOperation} -var-file=uat.tfvars --auto-approve
                 '''
             }
         }

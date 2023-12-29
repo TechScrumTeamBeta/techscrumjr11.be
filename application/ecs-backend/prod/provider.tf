@@ -5,7 +5,7 @@ terraform {
     # shared_credentials_file = "~/.aws/credentials"
     # profile                 = "secondaccount"
     bucket = "techscrum-tfstate-leo"
-    key    = "ecs-backedn/terraform.tfstate"
+    key    = "ecs-backend/prod/terraform.tfstate"
     # key    = "ecs-backend/${terraform.workspace}/terraform.tfstate"
     region = "ap-southeast-2"
 

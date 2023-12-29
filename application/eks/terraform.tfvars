@@ -1,0 +1,13 @@
+region                  = "ap-southeast-2"
+projectName             = "techscrum"
+vpc_cidr                = "10.1.0.0/16"
+public_subnet_cidrs     = ["10.1.0.0/24", "10.1.1.0/24", "10.1.2.0/24"]
+private_subnet_cidrs    = ["10.1.3.0/24", "10.1.4.0/24", "10.1.5.0/24"]
+route_table_cidr_block  = "0.0.0.0/0"
+aws_availabbility_zones = ["ap-southeast-2a", "ap-southeast-2b", "ap-southeast-2c"]
+environment             = "uat"
+instance_types          = "m4.large"
+cluster_version         = "1.25"
+k8s_cluster_name        = "techscrum-prod"
+hosted_zone_name        = "clouddevops.info"
+alb_zone_id             = "Z04453942V7VDN7SN1W51"

@@ -1,0 +1,8 @@
+{
+  "Template": {
+    "TemplateName": "contactPageEmailTemplate",
+    "SubjectPart": "{{title}}",
+    "HtmlPart": "<h1>Greeting from customer {{fullName}},</h1><p>Company : {{company}}</p><p>Phone : {{phone}}</p><p>Email : {{email}}</p><p>Message : {{message}}</p>",
+    "TextPart": "Dear {{fullName}},\r\nhe get this message: {{message}}. contact his phone: {{phone}}"
+  }
+}

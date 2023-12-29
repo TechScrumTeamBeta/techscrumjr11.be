@@ -1,0 +1,6 @@
+S3_webhost_bucket = "techscrum-prod-frontend"
+environment       = "prod"
+projectName       = "techscrum"
+root_domain       = "techscrum2023.com"
+region            = "ap-southeast-2"
+hosted_zone_name  = "clouddevops.info"

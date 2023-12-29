@@ -79,10 +79,10 @@ pipeline {
             steps {
                 // ehco 'Creating in UAT...'
                 sh '''
+                #!/bin/bash
                 cd application/ecs-backend
                 terraform apply -var-file=uat.tfvars --auto-approve
                 '''
-                
             }
         }
         stage('Create or Delete Resources in Production') {

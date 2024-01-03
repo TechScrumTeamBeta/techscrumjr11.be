@@ -1,0 +1,117 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_DEFAULT_REGION = 'ap-southeast-2'
+        CLUSTERNAME = 'techscrum-prod'
+    }
+
+    parameters {
+        booleanParam defaultValue:false, name:'blCreateFailOver'
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Create Resources') {
+            steps {
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh '''
+                    terraform init
+                    terraform validate
+                    terraform plan
+                    terraform apply --auto-approve
+                    '''
+                }
+            }
+        }
+
+        stage('Update Kubeconfig') {
+            steps {
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS'){
+                    sh 'aws eks update-kubeconfig --name ${CLUSTERNAME} --region ${AWS_DEFAULT_REGION}'
+                }
+            }
+        }
+
+        stage('Deploy Ingress') {
+            steps {
+                script{
+                    try{
+                        withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS'){
+                            sh '''
+                            cd application/eks/k8s
+                            kubectl apply -f deployment.yaml
+                            '''
+                        }
+                    }
+                } catch (err) {
+                    error "Failed to update deployment: ${err}"
+                }
+            }
+            sleep 60
+        }
+
+        stage('Create ALB Route53 Record and Failover') {
+            when { expression { return params.blCreateFailOver } }
+            steps {
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh '''
+                    cd application/eks/failover
+                    terraform init
+                    terraform validate
+                    terraform plan
+                    terraform apply --auto-approve
+                    '''
+                }
+            }
+        }
+
+        stage('Delete ALB Ingress') {
+            steps {
+                timeout(time: 3, unit: 'HOURS') {
+                    input message: 'Delete ALB Ingress?'
+                }
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh 'kubectl delete ingress alb-ingress -n backend'
+                }
+            }
+            sleep 30
+        }
+
+        stage('Delete Resources') {
+            steps {
+                timeout(time: 3, unit: 'HOURS') {
+                    input message: 'Delete eks resources?'
+                }
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh '''
+                    cd application/eks/failover
+                    terraform destroy --auto-approve
+                    cd ..
+                    terraform destroy --auto-approve
+                    echo 'Destroying...
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend channel: 'pet-lover', message: "Eks update, ${BUILD_NUMBER} succeeded!"
+            emailext(attachLog: true, body: 'tf result', subject: "EKS UPDATE SUCCEEDED", to: 'jamessihang@gmail.com')
+            echo 'Great job!'
+        }
+
+        failure {
+            slackSend channel: 'pet-lover', message: "Eks update, ${BUILD_NUMBER} failed!"
+            emailext(attachLog: true, body: 'tf result', subject: "EKS UPDATE FAILED", to: 'jamessihang@gmail.com')
+            echo "Don't worry, try again!"
+        }
+    }
+}

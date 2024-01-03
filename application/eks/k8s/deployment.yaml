@@ -37,10 +37,10 @@ spec:
     spec:
       containers:
         - name: techscrum
-          image: 114764874165.dkr.ecr.ap-southeast-2.amazonaws.com/techscrum-uat:latest
+          image: 046381260578.dkr.ecr.ap-southeast-2.amazonaws.com/pet-lover-uat:31
           imagePullPolicy: Always
           ports:
-            - containerPort: 8000
+            - containerPort: 8080
           env:
             - name: JWT_KEY
               valueFrom:
@@ -101,7 +101,7 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 8000
+      targetPort: 8080
       nodePort: 30006
   selector:
     app.kubernetes.io/name: techscrum

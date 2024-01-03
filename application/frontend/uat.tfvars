@@ -1,6 +1,6 @@
 S3_webhost_bucket = "techscrum-uat-frontend"
 environment       = "uat"
 projectName       = "techscrum"
-root_domain       = "clouddevops.info"
+root_domain       = "techscrumjr11.com"
 region            = "ap-southeast-2"
-hosted_zone_name  = "clouddevops.info"
+hosted_zone_name  = "techscrumjr11.com"

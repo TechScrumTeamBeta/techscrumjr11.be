@@ -104,13 +104,13 @@ pipeline {
     post {
         success {
             slackSend channel: 'pet-lover', message: "Eks update, ${BUILD_NUMBER} succeeded!"
-            emailext(attachLog: true, body: 'tf result', subject: "EKS UPDATE SUCCEEDED", to: 'jamessihang@gmail.com')
+            emailext(attachLog: true, body: 'tf result', subject: "EKS UPDATE SUCCEEDED", to: 'fisherinaus@gmail.com')
             echo 'Great job!'
         }
 
         failure {
             slackSend channel: 'pet-lover', message: "Eks update, ${BUILD_NUMBER} failed!"
-            emailext(attachLog: true, body: 'tf result', subject: "EKS UPDATE FAILED", to: 'jamessihang@gmail.com')
+            emailext(attachLog: true, body: 'tf result', subject: "EKS UPDATE FAILED", to: 'fisherinaus@gmail.com')
             echo "Don't worry, try again!"
         }
     }

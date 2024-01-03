@@ -24,9 +24,9 @@ data:
     receivers:
     - name: alert-emailer
       email_configs:
-      - to: jamessihang@hotmail.com
+      - to: fisherinaus@gmail.com
         send_resolved: false
-        from: jamessihang@hotmail.com
+        from: fisherinaus@gmail.com
         smarthost: smtp.eample.com:25
         require_tls: false
     - name: slack_demo

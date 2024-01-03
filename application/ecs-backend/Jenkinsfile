@@ -94,7 +94,9 @@ pipeline {
                                 terraform init
                                 terraform validate
                                 terraform plan -var-file=uat.tfvars
-                                terraform ${TFOperation} -var-file=uat.tfvars --auto-approve
+                                tfOperation=${TFOperation}
+                                terraform $tfOperation -var-file=uat.tfvars --auto-approve
+
                             '''
                         }
                     } else if (params.Environment == 'prod') {

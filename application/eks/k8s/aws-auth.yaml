@@ -4,19 +4,8 @@
 # aws eks update-kubeconfig --name techscrum-prod --region ap-southeast-2
 # kubectl get all
 mapUsers: |
-    - userarn: arn:aws:iam::046381260578:user/Shawn
+    - userarn: arn:aws:iam::650635451238:user/ying
       username: eks-admin
       groups:
         - system:masters
-    - userarn: arn:aws:iam::046381260578:user/Jeannie
-      username: eks-admin
-      groups:
-        - system:masters
-    - userarn: arn:aws:iam::046381260578:user/Cassie
-      username: eks-admin
-      groups:
-        - system:masters
-    - userarn: arn:aws:iam::046381260578:user/Xiaobo
-      username: eks-admin
-      groups:
-        - system:masters
+    

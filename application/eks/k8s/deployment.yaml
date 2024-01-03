@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
         - name: techscrum
-          image: 046381260578.dkr.ecr.ap-southeast-2.amazonaws.com/techscrum-uat:31
+          image: 650635451238.dkr.ecr.ap-southeast-2.amazonaws.com/techscrum-uat:31
           imagePullPolicy: Always
           ports:
             - containerPort: 8000

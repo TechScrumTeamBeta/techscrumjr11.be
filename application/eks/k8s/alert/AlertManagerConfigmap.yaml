@@ -32,4 +32,4 @@ data:
     - name: slack_demo
       slack_configs:
       - api_url: https://hooks.slack.com/services/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
-        channel: '#pet-lover'
+        channel: '#techscrum'

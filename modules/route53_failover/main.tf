@@ -29,7 +29,7 @@ resource "aws_route53_health_check" "techscrum_eks" {
   fqdn              = data.aws_lb.eks.dns_name
   port              = "80"
   type              = "HTTP"
-  resource_path     = "/api/v1/health_check"
+  resource_path     = "/api/v2/healthcheck"
   failure_threshold = "3"
   request_interval  = "30"
 

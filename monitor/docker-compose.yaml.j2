@@ -47,12 +47,12 @@ services:
       AWS_REGION: ap-southeast-2
       AWS_PROFILE: default
     expose:
-      - 8080
+      - 8000
     volumes:
       - ./yace-config.yaml:/tmp/config.yml
       - $HOME/.aws:/exporter/.aws:ro
     command:
-      - -listen-address=:8080
+      - -listen-address=:8000
       - -config.file=/tmp/config.yml
     networks:
       - monitoring

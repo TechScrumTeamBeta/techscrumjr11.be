@@ -18,7 +18,7 @@ cluster_name = "techscrum-prod"
 
 # backend_certificate_arn = "arn:aws:acm:ap-southeast-2:114764874165:certificate/f084a5c1-34fb-4f7c-a6f8-1e833616573c"
 
-# health_check_path = "/api/v1/health_check"
+# health_check_path = "/api/v2/health_check"
 
 # hosted_zone_name = "clouddevops.info"
 

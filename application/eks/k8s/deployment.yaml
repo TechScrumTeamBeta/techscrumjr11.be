@@ -10,12 +10,25 @@ metadata:
   namespace: backend
 type: Opaque
 data:
-  JWT_KEY: cGV0bG92ZXI=
-  CONNECTION_STRING: bW9uZ29kYitzcnY6Ly9mYW5nd2VpZG9uZzE5ODU6Wlh2Y0FFaWdXVlRCdXgwWUBwZXQuaWt5bW56eS5tb25nb2RiLm5ldC9wZXQtbG92ZXI=
-  BUCKET: ZGV2LXBldGxvdmVy
+  ENVIRONMENT: ZGV2ZWxvcA==
+  NAME: dGVjaHNjcnVtYXBw
+  PORT: ODAwMA==
+  API_PREFIX: L2FwaQ==
   AWS_REGION: YXAtc291dGhlYXN0LTI=
-  AWS_ACCESS_KEY_ID: QUtJQVFWVEVKMzRSS0dCUjNVVVE=
-  AWS_SECRET_ACCESS_KEY: QXhJUyttakc4dndyakFxcmxJYVJ6ZDRuRWNGa3VScGdEbTlyM1g0cQ==
+  AWS_ACCESS_KEY_ID: QUtJQVpPN0hGRE5UTjdVNjNQVFk=
+  AWS_SECRET_ACCESS_KEY: SVo0Wmp1dVU0cEpRbEJXL1JKK1RBUnZVVDFwcVVvd1ZZd2dJZXQ5WA==
+  ACCESS_SECRET: cmFuZG9t
+  EMAIL_SECRET: cmFuZG9t
+  FORGET_SECRET: cmFuZG9t
+  LIMITER: dHJ1ZQ==
+  PUBLIC_CONNECTION: bW9uZ29kYitzcnY6Ly9hZG1pbjphZG1pbkBjbHVzdGVyMC53aGtwYy5tb25nb2RiLm5ldC9wdWJsaWNkYj9hdXRoU291cmNlPWFkbWlu
+  TENANTS_CONNECTION: bW9uZ29kYitzcnY6Ly9hZG1pbjphZG1pbkBjbHVzdGVyMC53aGtwYy5tb25nb2RiLm5ldC91c2Vycz9hdXRoU291cmNlPWFkbWlu
+  CONNECT_TENANT: MTIz
+  MAIN_DOMAIN: dGVjaHNjcnVtanIxMS5jb20=
+  STRIPE_PRIVATE_KEY: cmFuZG9t
+  STRIPE_WEBHOOK_SECRET: cmFuZG9t
+  LOGGLY_ENDPOINT: ''
+  DEVOPS_MODE: ZmFsc2U=
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -37,26 +50,31 @@ spec:
     spec:
       containers:
         - name: techscrum
-          image: 650635451238.dkr.ecr.ap-southeast-2.amazonaws.com/techscrum-uat:31
+          image: 650635451238.dkr.ecr.ap-southeast-2.amazonaws.com/techscrum-ecr-repo:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:
-            - name: JWT_KEY
+            - name: ENVIRONMENT
               valueFrom:
                 secretKeyRef:
                   name: container-env-secret
-                  key: JWT_KEY
-            - name: CONNECTION_STRING
+                  key: ENVIRONMENT
+            - name: NAME
               valueFrom:
                 secretKeyRef:
                   name: container-env-secret
-                  key: CONNECTION_STRING
-            - name: BUCKET
+                  key: NAME
+            - name: PORT
               valueFrom:
                 secretKeyRef:
                   name: container-env-secret
-                  key: BUCKET
+                  key: PORT
+            - name: API_PREFIX
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: API_PREFIX
             - name: AWS_REGION
               valueFrom:
                 secretKeyRef:
@@ -72,6 +90,66 @@ spec:
                 secretKeyRef:
                   name: container-env-secret
                   key: AWS_SECRET_ACCESS_KEY
+            - name: ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: ACCESS_SECRET
+            - name: EMAIL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: EMAIL_SECRET
+            - name: FORGET_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: FORGET_SECRET
+            - name: LIMITER
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: LIMITER
+            - name: PUBLIC_CONNECTION
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: PUBLIC_CONNECTION
+            - name: TENANTS_CONNECTION
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: TENANTS_CONNECTION
+            - name: CONNECT_TENANT
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: CONNECT_TENANT
+            - name: MAIN_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: MAIN_DOMAIN
+            - name: STRIPE_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: STRIPE_PRIVATE_KEY
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: STRIPE_WEBHOOK_SECRET
+            - name: LOGGLY_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: LOGGLY_ENDPOINT
+            - name: DEVOPS_MODE
+              valueFrom:
+                secretKeyRef:
+                  name: container-env-secret
+                  key: DEVOPS_MODE
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler

@@ -33,7 +33,7 @@ pipeline {
         stage('Update Kubeconfig') {
             steps {
                 withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS'){
-                    sh 'aws eks update-kubeconfig --name ${CLUSTERNAME} --region ${AWS_DEFAULT_REGION}'
+                    sh 'aws eks update-kubeconfig --name techscrum-prod --region ap-southeast-2'
                 }
             }
         }

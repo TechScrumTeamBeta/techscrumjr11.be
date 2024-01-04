@@ -46,6 +46,7 @@ pipeline {
                             sh '''
                             cd application/eks/k8s
                             kubectl apply -f deployment.yaml
+                            kubectl get pods --namespace backend
                             '''
                         }
                     }

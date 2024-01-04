@@ -1,7 +1,7 @@
 data "tls_certificate" "eks" {
   url = var.cluster_url
 }
-
+# 为 EKS 集群设置一个 AWS IAM OpenID Connect (OIDC) 身份提供商，允许 Kubernetes 服务通过 IAM 角色与 AWS 服务进行交互。
 resource "aws_iam_openid_connect_provider" "eks" {
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]

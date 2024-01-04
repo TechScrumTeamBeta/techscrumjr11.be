@@ -27,7 +27,7 @@ data:
   MAIN_DOMAIN: dGVjaHNjcnVtanIxMS5jb20=
   STRIPE_PRIVATE_KEY: cmFuZG9t
   STRIPE_WEBHOOK_SECRET: cmFuZG9t
-  LOGGLY_ENDPOINT: ''
+  LOGGLY_ENDPOINT: ""
   DEVOPS_MODE: ZmFsc2U=
 ---
 apiVersion: apps/v1
@@ -171,7 +171,7 @@ metadata:
   name: techscrum
   namespace: backend
   annotations:
-    alb.ingress.kubernetes.io/healthcheck-path: /api/v1/health_check
+    alb.ingress.kubernetes.io/healthcheck-path: /api/v2/health_check
   labels:
     app.kubernetes.io/name: techscrum
 spec:

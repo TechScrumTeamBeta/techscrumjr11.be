@@ -10,4 +10,4 @@ variable "instance_types" {}
 variable "cluster_version" {}
 variable "k8s_cluster_name" {}          
 variable "hosted_zone_name" {}
-variable "alb_zone_id" {}
+# variable "alb_zone_id" {}

@@ -11,3 +11,6 @@ cluster_version         = "1.28"
 k8s_cluster_name        = "techscrum-prod"
 hosted_zone_name        = "techscrum11.com"
 # alb_zone_id             = "Z1GM3OXH4ZPM65"
+
+#node peak time ,node。  pod --hpa node 减少增加。
+# eksctl node  ec2 关闭，白天。 eks。  tigger lambda  scale up in  node.

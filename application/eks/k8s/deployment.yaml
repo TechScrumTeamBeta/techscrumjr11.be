@@ -30,6 +30,7 @@ data:
   LOGGLY_ENDPOINT: ""
   DEVOPS_MODE: ZmFsc2U=
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:

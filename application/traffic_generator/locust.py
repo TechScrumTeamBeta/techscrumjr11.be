@@ -19,8 +19,8 @@ class WebsiteUser(HttpUser):
     def visit_health_check(self):
         self.client.get("https://qa-api.techscrumjr11.com/api/v2/healthcheck", name="Visit Health Check")
 
-
-
+# click  静态地址。  workload，  fargate。 request too many , 
+#  
 
 # from locust import HttpUser, task, between
 
@@ -30,7 +30,7 @@ class WebsiteUser(HttpUser):
 #     @task
 #     def view_registration_page_frontend(self):
 #         self.client.get("https://uat.techscrumjr11.com/register")
-    
+ # data block就是一个 load .   
 #     @task
 #     def trigger_400_error(self):
 #         header = {'content-type': 'application/json'}

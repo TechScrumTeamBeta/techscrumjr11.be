@@ -1,0 +1,40 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+           
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:ListBucketVersions",
+                "s3:GetObject",
+                "s3:GetObjectVersion"
+            ],
+            "Resource": [
+                "arn:aws:s3:::techscrum-tf-state-hub",
+                "arn:aws:s3:::techscrum-tf-state-hub/*"
+            ]
+        },
+         {
+           
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject" 
+            ],
+            "Resource": [ 
+                "arn:aws:s3:::backup-techscrum-tf-state",
+                "arn:aws:s3:::backup-techscrum-tf-state/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": [ 
+                "arn:aws:s3:::techscrum-p3",
+                "arn:aws:s3:::techscrum-p3/*"
+            ]
+        }
+    ]
+}

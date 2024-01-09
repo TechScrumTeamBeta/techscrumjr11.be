@@ -1,0 +1,50 @@
+def s3_bucketname
+pipeline {
+    agent any
+
+    
+
+    stages {
+        stage('Git checkout') {
+            steps{
+                // Get source code from a GitHub repository
+                
+                git branch:'new-fe', credentialsId:'jenkins_node', url:'git@github.com:DevOpsTechscrum/DevOps-Techscrum.fe.git'
+            
+            }
+        }
+        // CI
+        stage('npm install') {
+            steps{
+                dir("./") {
+                    // sh 'yarn install'
+                    sh 'npm install --legacy-peer-deps'
+                    sh 'yarn add draft-js react react-dom'
+                    sh 'npm install eslint --legacy-peer-deps'
+                    sh 'npx eslint src'
+                }
+            }
+        }
+        
+        stage('Build') {
+            steps{
+                dir("./") {
+                    sh 'npm run build'
+                }
+            }
+        }
+    
+// CD
+
+        stage("Upload"){
+            steps{
+                dir("./"){
+                withAWS(region:"ap-southeast-2", credentials:"jenkins_aws"){
+                    // s3Delete(bucket: "${env.UATS3BucketName}", path:'**/*')
+                    s3Upload(bucket: "techscrum-frontend-jr10", workingDir:'build', includePathPattern:'**/*');
+                    }
+                } 
+            }   
+        }
+    }
+}

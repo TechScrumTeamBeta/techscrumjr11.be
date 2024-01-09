@@ -1,0 +1,7 @@
+projectName         = "techscrum"
+s3_bucket_name      = "techscrum-p3"
+lambda_zipfile_name = "removeLogs.zip"
+lambda_name         = "removeLogs"
+region              = "ap-southeast-2"
+description         = "remove logs every friday 12am"
+schedule_expression = "cron(0 0 ? * 6 *)"

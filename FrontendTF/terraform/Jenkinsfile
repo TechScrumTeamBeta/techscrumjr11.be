@@ -1,0 +1,21 @@
+pipeline {
+    agent any
+    stages {
+        stage('provision server') {
+         
+            steps {
+                script {
+                    dir('./FrontendTF/terraform') {
+                    withAWS(region:"ap-southeast-2", credentials:"jenkins_aws"){
+                        sh "terraform init -reconfigure"
+                        sh "terraform apply --auto-approve"
+                        
+                        }
+                    }
+                }
+        
+           }
+        }
+
+    }
+}

@@ -1,0 +1,188 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_DEFAULT_REGION = 'ap-southeast-2'
+        CLUSTERNAME = 'techscrum-prod'
+    }
+
+    parameters {
+        booleanParam defaultValue:false, name:'blCreateFailOver'
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Create Resources') {
+            steps {
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh '''
+                    terraform init
+                    terraform validate
+                    terraform plan
+                    terraform apply --auto-approve
+                    '''
+                    // eksctl create cluster
+                    // kubect了create
+                }
+            }
+        }
+
+        stage('Update Kubeconfig') {
+            steps {
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS'){
+                    sh 'aws eks update-kubeconfig --name techscrum-prod --region ap-southeast-2'
+                }
+            }
+        }
+
+        stage('Deploy Ingress') {
+            steps {
+                script{
+                    try{
+                        withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS'){
+                            sh '''
+                            cd application/eks/k8s
+                            kubectl apply -f deployment.yaml
+                            kubectl get pods --namespace backend
+                            cd ..
+                            kubectl apply -f web-app.yml
+                            kubectl get pods 
+                            kubectl get svc
+
+                            '''
+                        }
+                    }
+                } catch (err) {
+                    error "Failed to update deployment: ${err}"
+                }
+            }
+            sleep 60
+        }
+
+        stage('Create ALB Route53 Record and Failover') {
+            when { expression { return params.blCreateFailOver } }
+            steps {
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh '''
+                    cd application/eks/failover
+                    terraform init
+                    terraform validate
+                    terraform plan
+                    terraform apply --auto-approve
+                    '''
+                }
+            }
+        }
+
+        stage('Delete ALB Ingress') {
+            steps {
+                timeout(time: 3, unit: 'HOURS') {
+                    input message: 'Delete ALB Ingress?'
+                }
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh 'kubectl delete ingress alb-ingress -n backend'
+                }
+            }
+            sleep 30
+        }
+
+        stage('Delete Resources') {
+            steps {
+                timeout(time: 3, unit: 'HOURS') {
+                    input message: 'Delete eks resources?'
+                }
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh '''
+                    cd application/eks/failover
+                    terraform destroy --auto-approve
+                    cd ..
+                    terraform destroy --auto-approve
+                    echo 'Destroying...
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend channel: 'techscrum', message: "Eks update, ${BUILD_NUMBER} succeeded!"
+            emailext(attachLog: true, body: 'tf result', subject: "EKS UPDATE SUCCEEDED", to: 'fisherinaus@gmail.com')
+            echo 'Great job!'
+        }
+
+        failure {
+            slackSend channel: 'techscrum', message: "Eks update, ${BUILD_NUMBER} failed!"
+            emailext(attachLog: true, body: 'tf result', subject: "EKS UPDATE FAILED", to: 'fisherinaus@gmail.com')
+            echo "Don't worry, try again!"
+        }
+    }
+}
+
+
+https://docs.aws.amazon.com/eks/latest/userguide/prometheus.html
+ set prometheus and grafana in eks
+ Create a Prometheus namespace.
+
+
+kubectl create namespace prometheus
+Add the prometheus-community chart repository.
+
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+Deploy Prometheus.
+
+
+helm upgrade -i prometheus prometheus-community/prometheus \
+    --namespace prometheus \
+    --set alertmanager.persistentVolume.storageClass="gp2",server.persistentVolume.storageClass="gp2"
+Amazon EBS CSI driver
+    Create an IAM role
+    Manage the Amazon EKS add-on
+    Deploy a sample application
+
+https://repost.aws/knowledge-center/eks-persistent-storage
+add ebs persistent storage aws eks
+https://docs.aws.amazon.com/eks/latest/userguide/csi-iam-role.html
+Create an IAM role and attach a policy. AWS maintains an AWS managed policy or you can create your own custom policy. You can create an IAM role and attach the AWS managed policy with the following command. Replace my-cluster with the name of your cluster. The command deploys an AWS CloudFormation stack that creates an IAM role and attaches the IAM policy to it. If your cluster is in the AWS GovCloud (US-East) or AWS GovCloud (US-West) AWS Regions, then replace arn:aws: with arn:aws-us-gov:.
+    前提是创建oidc Creating an IAM OIDC provider for your cluste
+    aws iam list-open-id-connect-providers | grep $oidc_id | cut -d "/" -f4
+    aws eks list-clusters
+    aws eks describe-cluster --name techscrum-prod
+    ut of this command, look for the identity section. If OIDC is enabled, this section will include an oidc field with an issuer URL.
+
+    eksctl create iamserviceaccount \
+        --name ebs-csi-controller-sa \
+        --namespace kube-system \
+        --cluster techscrum-prod \
+        --role-name AmazonEKS_EBS_CSI_DriverRole \
+        --role-only \
+        --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
+        --approve
+    Kubernetes 允许通过 service account 将特定的角色和权限分配给运行在集群中的各种服务和应用程序。这样可以确保每个服务只能访问它需要的资源，从而提高安全性。
+    service account 是一种在 Kubernetes 和 AWS EKS 环境中管理权限、提高安全性和简化配置的最佳实践。对于 Amazon EBS CSI 插件而言，这允许插件安全地与 AWS 服务交互，管理 EBS 卷
+    eksctl get addon --name aws-ebs-csi-driver --cluster techscrum-prod
+
+    https://docs.aws.amazon.com/eks/latest/userguide/managing-ebs-csi.html
+
+    To add the Amazon EBS CSI add-on using eksctl
+    eksctl create addon --name aws-ebs-csi-driver --cluster techscrum-prod --service-account-role-arn arn:aws:iam::650635451238:role/AmazonEKS_EBS_CSI_DriverRole --force
+    1‘Check the current version of your Amazon EBS CSI add-on.
+    eksctl get addon --name aws-ebs-csi-driver --cluster techscrum-prod
+    2，Update the add-on to the version returned under UPDATE AVAILABLE in the output of the previous step.
+    eksctl update addon --name aws-ebs-csi-driver --version v1.26.0-eksbuild.1 --cluster techscrum-prod \
+    --service-account-role-arn arn:aws:iam::650635451238:role/AmazonEKS_EBS_CSI_DriverRole --force
+    ebs csi driver 安装好之后就可以了。
+    kubectl  get all -n prometheus  
+    pod 状态就不会pending 了
+
+Use kubectl to port forward the Prometheus console to your local machine.
+
+
+kubectl --namespace=prometheus port-forward deploy/prometheus-server 9090
+Point a web browser to http://localhost:9090 to view the Prometheus console.

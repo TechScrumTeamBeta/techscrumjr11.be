@@ -1,0 +1,137 @@
+
+pipeline {
+    agent { label 'jenkins_slave' }
+
+    parameters {
+        string(name: 'AWS_CREDENTIAL_ID', defaultValue: 'markwang access', description: 'The ID of the AWS credentials to use')
+        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'The Git branch to build and deploy')
+        choice(
+            name: 'TFOperation',
+            choices: ['apply', 'destroy'],
+            description: 'apply for creating, destroy for releasing the resources'
+        )
+        choice(
+            name: 'Environment',
+            choices: ['uat', 'prod'],
+            description: 'Select the environment'
+        )
+    }
+
+    environment {
+        AWS_DEFAULT_REGION = 'ap-southeast-2'
+    }
+
+    tools {
+        nodejs 'jenkinsnode'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    // Checkout the specified branch from GitHub
+                    checkout([$class: 'GitSCM', branches: [[name: params.GIT_BRANCH]], userRemoteConfigs: [[url: 'https://github.com/TechScrumTeamBeta/techscrumjr11.be']]])
+                }
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                script {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: params.AWS_CREDENTIAL_ID,
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                    ]]) {
+                        sh '''
+                    cd application/ecs-backend
+                    terraform init
+                    '''
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Validation') {
+            steps {
+                echo 'Validating...'
+                sh '''
+                cd application/ecs-backend
+                terraform validate
+                '''
+            }
+        }
+        // stage('Create or Select Workspace UAT') {
+        //     steps {
+        //         sh 'terraform workspace new uat || terraform workspace select uat'
+        //     }
+        // }
+
+        stage('Terraform plan uat') {
+            steps {
+                echo 'Planning...'
+                sh '''
+            cd application/ecs-backend
+            terraform plan -var-file=uat.tfvars
+            '''
+            }
+        }
+
+        stage('Execute Terraform Based on Environment') {
+            steps {
+                script {
+                    if (params.Environment == 'uat') {
+                        withCredentials([[
+                            $class: 'AmazonWebServicesCredentialsBinding',
+                            credentialsId: params.AWS_CREDENTIAL_ID,
+                            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                        ]]) {
+                            sh '''
+                                #!/bin/bash
+                                cd application/ecs-backend
+                                terraform init
+                                terraform validate
+                                terraform plan -var-file=uat.tfvars
+                                tfOperation=${TFOperation}
+                                terraform $tfOperation -var-file=uat.tfvars --auto-approve
+
+                            '''
+                        }
+                    } else if (params.Environment == 'prod') {
+                        // 检查当前用户是否是 'leoliu'
+                        if (currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause).getUserId().equals('leoliu')) {
+                            timeout(time: 4, unit: 'HOURS') {
+                                input message: 'Create terraform resources in prod?', ok: 'Deploy'
+                            }
+                            withCredentials([[
+                                $class: 'AmazonWebServicesCredentialsBinding',
+                                credentialsId: params.AWS_CREDENTIAL_ID,
+                                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                            ]]) {
+                                sh '''
+                                    #!/bin/bash
+                                    cd application/ecs-backend/prod
+                                    terraform init
+                                    terraform validate
+                                     terraform plan -var-file=prod.tfvars
+                                    terraform ${TFOperation} -var-file=prod.tfvars --auto-approve
+                                '''
+                            }
+                        } else {
+                            error "Production environment can only be deployed by user 'leoliu'"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+            always {
+                cleanWs()
+            }
+    }
+}

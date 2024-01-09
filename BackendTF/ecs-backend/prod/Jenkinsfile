@@ -1,0 +1,86 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCOUNT_ID = '650635451238'
+        AWS_DEFAULT_REGION = 'ap-southeast-2'
+    }
+
+    parameters {
+        choice(
+            name: 'TFOperation',
+            choices: ['apply', 'destroy'],
+            description: 'apply for creating resources destroy for releasing all the resources'
+        )
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh '''
+                    cd application/ecs-backend
+                    terraform init -backend-config=backend-uat.hcl
+                    '''
+                }
+            }
+        }
+
+        stage('Terraform Validation') {
+            steps {
+                echo 'Validating...'
+                sh 'terraform validate'
+            }
+        }
+
+        stage('Create or Select Workspace UAT') {
+            steps {
+                sh 'terraform workspace new uat || terraform workspace select uat'
+            }
+        }
+
+        stage('Terraform plan') {
+            steps {
+                sh 'terraform plan'
+            }
+        }
+
+        stage('Creare or Delete Resouces in UAT') {
+            steps {
+                ehco 'Creating in UAT...'
+                sh 'terraform ${tfOperation} -var-file=uat.tfvars --auto-approve'
+            }
+        }
+
+        stage('Create or Delete Resources in Production') {
+            steps {
+                timeout(time: 4, unit: 'HOURS') {
+                    input message: 'Create terraform resources in prod?'
+                }
+                withAWS(region: "${AWS_DEFAULT_REGION}", credentials: 'AWS') {
+                    sh '''
+                    cd application/ecs-backend
+                    terraform init -backend-config=backend-prod.hcl
+                    terraform validate
+                    terraform workspace new prod || terraform workspace select prod
+                    terraform plan
+                    terraform ${tfOperation} -var-file=prod.tfvars --auto-approve
+                    echo 'Creating in PROD...
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+            always {
+                cleanWs()
+            }
+    }
+}

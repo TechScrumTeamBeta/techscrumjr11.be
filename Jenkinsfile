@@ -89,56 +89,56 @@ pipeline {
             }
         }
 
-    //     stage('Execute Terraform Based on Environment') {
-    //         steps {
-    //             script {
-    //                 if (params.Environment == 'uat') {
-    //                     withCredentials([[
-    //                         $class: 'AmazonWebServicesCredentialsBinding',
-    //                         credentialsId: params.AWS_CREDENTIAL_ID,
-    //                         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-    //                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-    //                     ]]) {
-    //                         sh '''
-    //                             #!/bin/bash
-    //                             cd application/ecs-backend
-    //                             terraform init
-    //                             terraform validate
-    //                             terraform plan -var-file=uat.tfvars
-    //                             tfOperation=${TFOperation}
-    //                             terraform $tfOperation -var-file=uat.tfvars --auto-approve
+        // stage('Execute Terraform Based on Environment') {
+        //     steps {
+        //         script {
+        //             if (params.Environment == 'uat') {
+        //                 withCredentials([[
+        //                     $class: 'AmazonWebServicesCredentialsBinding',
+        //                     credentialsId: params.AWS_CREDENTIAL_ID,
+        //                     accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+        //                     secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        //                 ]]) {
+        //                     sh '''
+        //                         #!/bin/bash
+        //                         cd application/ecs-backend
+        //                         terraform init
+        //                         terraform validate
+        //                         terraform plan -var-file=uat.tfvars
+        //                         tfOperation=${TFOperation}
+        //                         terraform $tfOperation -var-file=uat.tfvars --auto-approve
 
-    //                         '''
-    //                     }
-    //                 } else if (params.Environment == 'prod') {
-    //                     // 检查当前用户是否是 'leoliu'
-    //                     if (currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause).getUserId().equals('leoliu')) {
-    //                         timeout(time: 4, unit: 'HOURS') {
-    //                             input message: 'Create terraform resources in prod?', ok: 'Deploy'
-    //                         }
-    //                         withCredentials([[
-    //                             $class: 'AmazonWebServicesCredentialsBinding',
-    //                             credentialsId: params.AWS_CREDENTIAL_ID,
-    //                             accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-    //                             secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-    //                         ]]) {
-    //                             sh '''
-    //                                 #!/bin/bash
-    //                                 cd application/ecs-backend/prod
-    //                                 terraform init
-    //                                 terraform validate
-    //                                  terraform plan -var-file=prod.tfvars
-    //                                 terraform ${TFOperation} -var-file=prod.tfvars --auto-approve
-    //                             '''
-    //                         }
-    //                     } else {
-    //                         error "Production environment can only be deployed by user 'leoliu'"
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+        //                     '''
+        //                 }
+        //             } else if (params.Environment == 'prod') {
+        //                 // 检查当前用户是否是 'leoliu'
+        //                 if (currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause).getUserId().equals('leoliu')) {
+        //                     timeout(time: 4, unit: 'HOURS') {
+        //                         input message: 'Create terraform resources in prod?', ok: 'Deploy'
+        //                     }
+        //                     withCredentials([[
+        //                         $class: 'AmazonWebServicesCredentialsBinding',
+        //                         credentialsId: params.AWS_CREDENTIAL_ID,
+        //                         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+        //                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        //                     ]]) {
+        //                         sh '''
+        //                             #!/bin/bash
+        //                             cd application/ecs-backend/prod
+        //                             terraform init
+        //                             terraform validate
+        //                              terraform plan -var-file=prod.tfvars
+        //                             terraform ${TFOperation} -var-file=prod.tfvars --auto-approve
+        //                         '''
+        //                     }
+        //                 } else {
+        //                     error "Production environment can only be deployed by user 'leoliu'"
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+    }
 
     post {
             always {

@@ -44,6 +44,7 @@ pipeline {
                         sh 'tfsec /src'
                     }
                 }
+            }
         }
 
         stage('Terraform Init') {
@@ -73,11 +74,6 @@ pipeline {
                 '''
             }
         }
-        // stage('Create or Select Workspace UAT') {
-        //     steps {
-        //         sh 'terraform workspace new uat || terraform workspace select uat'
-        //     }
-        // }
 
         stage('Terraform plan uat') {
             steps {

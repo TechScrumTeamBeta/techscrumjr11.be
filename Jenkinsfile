@@ -40,7 +40,6 @@ pipeline {
                 script {
                     ansiColor('xterm') {
                         sh '''
-                        cd BackendTF
                         tfsec .
                         '''
                     }

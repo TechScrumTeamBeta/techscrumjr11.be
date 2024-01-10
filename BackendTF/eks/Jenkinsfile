@@ -123,7 +123,11 @@ pipeline {
         }
     }
 }
-
+cd eks/
+kubectl apply -f web-app.yml
+ cd k8s/EFK-Log/
+kubectl apply -f .
+ kubectl get pods -n efklog
 
 https://docs.aws.amazon.com/eks/latest/userguide/prometheus.html
  set prometheus and grafana in eks

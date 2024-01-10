@@ -39,51 +39,20 @@ pipeline {
             steps {
                 script {
                     // docker run --rm -it -v "$(pwd):/src" aquasec/tfsec /src
-                    def tfsecImage = docker.image('aquasec/tfsec')
-                    tfsecImage.inside("-v ${pwd()}:/src") {
-                        sh 'tfsec /src'
-                    }
-                }
-            }
-        }
 
-        stage('Terraform Init') {
-            steps {
-                script {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: params.AWS_CREDENTIAL_ID,
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
-                        sh '''
-                    cd application/ecs-backend
-                    terraform init
+                    sh '''
+                    cd BackendTF
+                    tfsec .
                     '''
-                    }
+                    // def tfsecImage = docker.image('aquasec/tfsec')
+                    // tfsecImage.inside("-v ${pwd()}:/src") {
+                    //     sh 'tfsec /src'
+                    // }
                 }
             }
         }
 
-        stage('Terraform Validation') {
-            steps {
-                echo 'Validating...'
-                sh '''
-                cd application/ecs-backend
-                terraform validate
-                '''
-            }
-        }
-
-        stage('Terraform plan uat') {
-            steps {
-                echo 'Planning...'
-                sh '''
-            cd application/ecs-backend
-            terraform plan -var-file=uat.tfvars
-            '''
-            }
-        }
+       
 
       
     }

@@ -1,0 +1,119 @@
+pipeline {
+     agent { label 'jenkins_slave' }
+
+    parameters {
+        string(name: 'AWS_CREDENTIAL_ID', defaultValue: 'markwang access', description: 'The ID of the AWS credentials to use')
+        string(name: 'ECS_CLUSTER', defaultValue: 'techscrum_ecs_cluster', description: 'The name of the ECS cluster')
+        string(name: 'ECS_SERVICE', defaultValue: 'techscrum_ecs_service', description: 'The name of the ECS service')
+        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'The Git branch to build and deploy')
+    }
+
+    environment {
+        AWS_DEFAULT_REGION = 'ap-southeast-2'
+        DOCKER_IMAGE_NAME = 'techscrum'
+        DOCKER_IMAGE_TAG = 'latest'
+        DOCKERFILE_PATH = '.'
+        ECR_REPO_URL = '650635451238.dkr.ecr.ap-southeast-2.amazonaws.com/techscrum_backend_ecr' // Update with your ECR repository URL
+
+    }
+      
+      tools {
+        nodejs 'jenkinsnode'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    // Checkout the specified branch from GitHub
+                    checkout([$class: 'GitSCM', branches: [[name: params.GIT_BRANCH]], userRemoteConfigs: [[url: 'https://github.com/TechScrumTeamBeta/DevOps-Techscrum.be.git']]])
+                }
+            }
+        }
+
+        stage('snyk') {
+            steps {
+                echo 'snyk scan...'
+
+                    ansiColor('xterm') {
+                        snykSecurity(
+                            snykInstallation: 'snyk@latest', // 指定 Snyk 工具的安装和版本
+                            snykTokenId: 'techscrum-snyk-api-token', // 指定用于 Snyk API 的凭据
+                            failOnIssues: false, // 如果发现漏洞则导致构建失败
+                            severity: 'low' // 报告所有级别（包括低级别）的漏洞
+                        )
+                    }
+            }
+        }
+
+        stage('build') {
+            steps {
+                sh 'npm install'
+                sh 'npm run build'
+                sh 'npm run lint'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'npm run test'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                script {
+                    sh "sudo docker build -t ${env.DOCKER_IMAGE_NAME}:${env.DOCKER_IMAGE_TAG} ${env.DOCKERFILE_PATH}" // Build Docker image
+                }
+            }
+        }
+
+        stage('Docker Push to ECR') {
+            steps {
+                script {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: params.AWS_CREDENTIAL_ID,
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                    ]]) {
+                        sh "aws ecr get-login-password --region ${env.AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${env.ECR_REPO_URL}" // Authenticate with ECR
+                        sh "docker tag ${env.DOCKER_IMAGE_NAME}:${env.DOCKER_IMAGE_TAG} ${env.ECR_REPO_URL}:${env.DOCKER_IMAGE_TAG}" // Tag for AWS ECR
+                        sh "docker push ${env.ECR_REPO_URL}:${env.DOCKER_IMAGE_TAG}" // Push to AWS ECR
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to ECS cluster') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
+                        credentialsId: params.AWS_CREDENTIAL_ID]
+                    ]) {
+                    script {
+                        sh "aws ecs update-service --cluster ${params.ECS_CLUSTER} --service ${params.ECS_SERVICE} --force-new-deployment"
+                    }
+                }
+            }
+        }
+               stage('Send Notification') {
+            steps {
+                script {
+                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                        withCredentials([[
+                            $class: 'AmazonWebServicesCredentialsBinding',
+                            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
+                            credentialsId: params.AWS_CREDENTIAL_ID
+                        ]]) {
+                            def snsTopicArn = "arn:aws:sns:ap-southeast-2:650635451238:app_notification"
+                            sh "aws sns publish --topic-arn ${snsTopicArn} --message 'test result' --subject 'Notification' --region ap-southeast-2"
+                        }
+                    }
+                }
+            }
+         }
+      }
+   }

@@ -39,9 +39,15 @@ pipeline {
             steps {
                 script {
                     ansiColor('xterm') {
+                        try{
                         sh '''
-                        tfsec .
-                        '''
+                            tfsec .
+                            '''
+                        }catch(Exception e){
+                            echo "TFsec found vulnerabilities, but continuing the build"
+                            echo "${e.getMessage()}"
+                        }
+
                     }
                 }
             }

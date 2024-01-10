@@ -35,19 +35,15 @@ pipeline {
             }
         }
 
-        stage('TFsec scan'){
+         stage('TFsec scan'){
             steps {
                 script {
-                    // docker run --rm -it -v "$(pwd):/src" aquasec/tfsec /src
-
-                    sh '''
-                    cd BackendTF
-                    tfsec .
-                    '''
-                    // def tfsecImage = docker.image('aquasec/tfsec')
-                    // tfsecImage.inside("-v ${pwd()}:/src") {
-                    //     sh 'tfsec /src'
-                    // }
+                    ansiColor('xterm') {
+                        sh '''
+                        cd BackendTF
+                        tfsec .
+                        '''
+                    }
                 }
             }
         }

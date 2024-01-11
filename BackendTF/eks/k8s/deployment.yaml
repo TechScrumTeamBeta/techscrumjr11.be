@@ -40,7 +40,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: techscrum
-  replicas: 3
+  replicas: 2
   strategy:
     type: RollingUpdate
   template:
@@ -181,6 +181,6 @@ spec:
     - name: http
       port: 80
       targetPort: 8000
-      nodePort: 30006
+      nodePort: 30002
   selector:
     app.kubernetes.io/name: techscrum

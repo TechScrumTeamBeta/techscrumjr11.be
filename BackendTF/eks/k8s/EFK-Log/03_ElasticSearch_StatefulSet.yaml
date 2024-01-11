@@ -94,9 +94,11 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+    # add pv pvc
       volumes:
-      - name: elasticsearch-logging
-        emptyDir: {}
+      - name: elasticsearch-storage
+        persistentVolumeClaim:
+          claimName: elasticsearch-logging-pvc
       # Elasticsearch requires vm.max_map_count to be at least 262144.
       # If your OS already sets up this number to a higher value, feel free
       # to remove this init container.
@@ -106,3 +108,13 @@ spec:
         name: elasticsearch-logging-init
         securityContext:
           privileged: true
+  # pvc add 10gi 
+  volumeClaimTemplates:
+  - metadata:
+      name: elasticsearch-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi 
+

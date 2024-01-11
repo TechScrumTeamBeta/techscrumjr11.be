@@ -122,3 +122,6 @@ spec:
       resources:
         requests:
           storage: 10Gi
+
+          #User
+ #kubectl get pods -n kube-system | grep ebs-csi 之后是否存在

@@ -160,6 +160,9 @@ Create an IAM role and attach a policy. AWS maintains an AWS managed policy or y
     aws eks describe-cluster --name techscrum-prod
     ut of this command, look for the identity section. If OIDC is enabled, this section will include an oidc field with an issuer URL.
 
+或者需要来重新连接oidc
+eksctl utils associate-iam-oidc-provider --region=ap-southeast-2 --cluster=techscrum-prod --approve
+ 然后使用下面的命令
     eksctl create iamserviceaccount \
         --name ebs-csi-controller-sa \
         --namespace kube-system \
@@ -168,6 +171,8 @@ Create an IAM role and attach a policy. AWS maintains an AWS managed policy or y
         --role-only \
         --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
         --approve
+
+        
     Kubernetes 允许通过 service account 将特定的角色和权限分配给运行在集群中的各种服务和应用程序。这样可以确保每个服务只能访问它需要的资源，从而提高安全性。
     service account 是一种在 Kubernetes 和 AWS EKS 环境中管理权限、提高安全性和简化配置的最佳实践。对于 Amazon EBS CSI 插件而言，这允许插件安全地与 AWS 服务交互，管理 EBS 卷
     eksctl get addon --name aws-ebs-csi-driver --cluster techscrum-prod

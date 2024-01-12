@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ebs-efk-pv-claim
-spec: 
+  name: elasticsearch-storage
+spec:
   accessModes:
     - ReadWriteOnce
   storageClassName: ebs-sc
-  resources: 
+  resources:
     requests:
-      storage: 4Gi
+      storage: 10Gi

@@ -94,7 +94,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-    # add pv pvc
+    # add pv pvc 新增内容
       volumes:
       - name: elasticsearch-storage
         persistentVolumeClaim:
@@ -108,20 +108,7 @@ spec:
         name: elasticsearch-logging-init
         securityContext:
           privileged: true
-  # pvc add 10gi 
-  volumeClaimTemplates:
-  - metadata:
-      name: elasticsearch-storage
-      labels:
-        app: elasticsearch
-        role: storage
-      annotations:
-        "example.com/description": "Persistent storage for Elasticsearch"
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 10Gi
+  
 
           #User
  #kubectl get pods -n kube-system | grep ebs-csi 之后是否存在

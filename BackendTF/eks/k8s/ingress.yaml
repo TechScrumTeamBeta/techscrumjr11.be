@@ -14,6 +14,7 @@ metadata:
   name: alb-ingress
   namespace: backend
   annotations:
+    #如果是nodeport或者loadbalancer则可以，如果clusterip需要添加target type annotation
     alb.ingress.kubernetes.io/load-balancer-name: techscrumjr11-prod-ingress-alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTP

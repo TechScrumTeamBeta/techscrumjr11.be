@@ -114,7 +114,7 @@ resource "aws_ecs_task_definition" "backend" {
         },
 
 
-        environment = var.environment == "prod" ? [
+        environment = var.environment == "uat" ? [
           # { name = "ENVIRONMENT", value = local.ssm_values["/techscrum/ENVIRONMENT"] },
           # { name = "NAME", value = local.ssm_values["/techscrum/NAME"] },
           # { name = "PORT", value = local.ssm_values["/techscrum/PORT"] },

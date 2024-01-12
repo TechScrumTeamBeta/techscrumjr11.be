@@ -1,58 +1,120 @@
-apiVersion: networking.k8s.io/v1
-kind: IngressClass
-metadata:
-  name: alb-ingress-class
-  namespace: backend
-  annotations:
-    ingressclass.kubernetes.io/is-default-class: "true"
-spec:
-  controller: ingress.k8s.aws/alb
----
+# Annotations Reference: https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/guide/ingress/annotations/
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: alb-ingress
+  name: alb-ingress-techscrum
   namespace: backend
   annotations:
-    #如果是nodeport或者loadbalancer则可以，如果clusterip需要添加target type annotation
-    alb.ingress.kubernetes.io/load-balancer-name: techscrumjr11-prod-ingress-alb
+    # Load Balancer Name
+    alb.ingress.kubernetes.io/load-balancer-name: alb-ingress-techscrum
+    # Ingress Core Settings
+    #kubernetes.io/ingress.class: "alb" (OLD INGRESS CLASS NOTATION - STILL WORKS BUT RECOMMENDED TO USE IngressClass Resource)
     alb.ingress.kubernetes.io/scheme: internet-facing
+    # Health Check Settings
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
-    #alb.ingress.kubernetes.io/healthcheck-path: /api/v2/health_check
+    #Important Note:  Need to add health check path annotations in service level if we are planning to use multiple targets in a load balancer
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
-    alb.ingress.kubernetes.io/success-codes: "200-399"
+    alb.ingress.kubernetes.io/success-codes: "200"
     alb.ingress.kubernetes.io/healthy-threshold-count: "2"
     alb.ingress.kubernetes.io/unhealthy-threshold-count: "2"
-    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:ap-southeast-2:650635451238:certificate/06484957-ddd1-47a8-be11-ea36c2f204bc"
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    ## SSL Settings
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-southeast-2:650635451238:certificate/2923b106-2476-452a-b46b-5459e6cc5e49
+    #alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-1-2017-01 #Optional (Picks default if not used)
+    # SSL Redirect Setting
     alb.ingress.kubernetes.io/ssl-redirect: "443"
-    alb.ingress.kubernetes.io/backend-protocol: HTTP
 spec:
-  ingressClassName: alb-ingress-class
-  #defaultBackend: 这个是没有rule的情况
-  #service:
-  #name: techscrumjr11
-  #port:
-  #number: 80
+  defaultBackend:
+    service:
+      name: app3-nginx-nodeport-service
+      port:
+        number: 80
   rules:
-    - host: eks-api.techscrumjr11.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: techscrum
-                port:
-                  number: 80
     - http:
         paths:
-          - path: /
+          - path: /app1
             pathType: Prefix
             backend:
               service:
-                name: techscrum
+                name: app1-nginx-nodeport-service
                 port:
                   number: 80
+          - path: /app2
+            pathType: Prefix
+            backend:
+              service:
+                name: app2-nginx-nodeport-service
+                port:
+                  number: 80
+          - path: /sbappsvc
+            pathType: Prefix
+            backend:
+              service:
+                name: sbappsvc
+                port:
+                  number: 80
+# Important Note-1: In path based routing order is very important, if we are going to use  "/*", try to use it at the end of all rules.
+
+# 1. If  "spec.ingressClassName: my-aws-ingress-class" not specified, will reference default ingress class on this kubernetes cluster
+# 2. Default Ingress class is nothing but for which ingress class we have the annotation `ingressclass.kubernetes.io/is-default-class: "true"`
+
+# apiVersion: networking.k8s.io/v1
+# kind: IngressClass
+# metadata:
+#   name: alb-ingress-class
+#   namespace: backend
+#   annotations:
+#     ingressclass.kubernetes.io/is-default-class: "true"
+# spec:
+#   controller: ingress.k8s.aws/alb
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: alb-ingress
+#   namespace: backend
+#   annotations:
+#     #如果是nodeport或者loadbalancer则可以，如果clusterip需要添加target type annotation
+#     alb.ingress.kubernetes.io/load-balancer-name: techscrumjr11-prod-ingress-alb
+#     alb.ingress.kubernetes.io/scheme: internet-facing
+#     alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+#     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+#     #alb.ingress.kubernetes.io/healthcheck-path: /api/v2/health_check
+#     alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
+#     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+#     alb.ingress.kubernetes.io/success-codes: "200-399"
+#     alb.ingress.kubernetes.io/healthy-threshold-count: "2"
+#     alb.ingress.kubernetes.io/unhealthy-threshold-count: "2"
+#     alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:ap-southeast-2:650635451238:certificate/06484957-ddd1-47a8-be11-ea36c2f204bc"
+#     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+#     alb.ingress.kubernetes.io/ssl-redirect: "443"
+#     alb.ingress.kubernetes.io/backend-protocol: HTTP
+# spec:
+#   ingressClassName: alb-ingress-class
+#   #defaultBackend: 这个是没有rule的情况
+#   #service:
+#   #name: techscrumjr11
+#   #port:
+#   #number: 80
+#   rules:
+#     - host: eks-api.techscrumjr11.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: techscrum
+#                 port:
+#                   number: 80
+#     - http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: techscrum
+#                 port:
+#                   number: 80

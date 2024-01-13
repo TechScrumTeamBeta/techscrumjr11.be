@@ -109,6 +109,8 @@ resource "aws_appautoscaling_policy" "scale_down_policy" {
 }
 
 # Create target tracking scaling policy using metric math
+# 如cpuutilization是不使用 container insigts 来获得cloud watch metric。
+#如果开启container insights 会有新的metric
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   alarm_name          = "${aws_ecs_service.service.name}-cpu-high-${var.environment}"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -134,7 +136,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_low" {
   namespace           = "AWS/ECS"
   period              = "60"
   statistic           = "Average"
-  threshold           = "20"
+  threshold           = "10"
   alarm_actions       = [aws_appautoscaling_policy.scale_down_policy.arn]
 
   dimensions = {

@@ -51,8 +51,8 @@ resource "aws_internet_gateway" "igw" {
 # Creat eip for NAT
 resource "aws_eip" "nat" {
   count = var.environment == "prod" ? 1 : 0
-  # vpc      = true
-  domain = "vpc"
+  vpc      = true
+  # domain = "vpc"
   tags = {
     Name = "${var.projectName}_eip"
   }

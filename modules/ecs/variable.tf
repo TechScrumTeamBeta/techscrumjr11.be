@@ -12,3 +12,14 @@ variable "cloudwatch_group_name" {}
 variable "region" {}
 variable "private_subnets_ids" {}
 variable "imageURI" {}
+variable "task_min_count" {
+  description = "min count of tasks"
+  type        = number
+  default     = 2
+}
+
+variable "task_max_count" {
+  description = "min count of tasks"
+  type        = number
+  default     = 4
+}

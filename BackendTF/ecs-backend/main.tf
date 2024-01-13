@@ -15,9 +15,11 @@ module "networking" {
   environment             = var.environment
   k8s_cluster_name        = var.k8s_cluster_name
 }
+
 module "ses" {
   source = "../../modules/ses"
 }
+
 
 
 
@@ -54,6 +56,10 @@ module "cloudwatch" {
   source      = "../../modules/cloudwatch"
   projectName = var.projectName
   environment = var.environment
+  cluster_name= var.cluster_name
+  alb_arn_suffix = module.application_load_balancer.alb_arn_suffix
+  sns_email   = var.sns_email
+
 }
 
 # Creat ECS task definition and ECS service

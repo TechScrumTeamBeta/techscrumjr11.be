@@ -25,3 +25,7 @@ hosted_zone_name = "techscrumjr11.com"
 imageURI = "650635451238.dkr.ecr.ap-southeast-2.amazonaws.com/techscrum_backend_ecr:latest"
 
 k8s_cluster_name = "techscrum-uat"
+
+sns_email="fisherinaus@gmail.com"
+task_min_count = 2
+task_max_count = 4

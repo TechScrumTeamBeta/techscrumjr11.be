@@ -89,7 +89,7 @@ data "aws_ssm_parameter" "stripe_webhook_secret" {
 
 # Create task definition
 resource "aws_ecs_task_definition" "backend" {
-  family = "backend"
+  family = "techscrum-backend-${var.environment}"
   container_definitions = jsonencode(
     [
       {
@@ -114,7 +114,7 @@ resource "aws_ecs_task_definition" "backend" {
         },
 
 
-        environment = var.environment == "uat" ? [
+        environment= [
           # { name = "ENVIRONMENT", value = local.ssm_values["/techscrum/ENVIRONMENT"] },
           # { name = "NAME", value = local.ssm_values["/techscrum/NAME"] },
           # { name = "PORT", value = local.ssm_values["/techscrum/PORT"] },
@@ -147,7 +147,8 @@ resource "aws_ecs_task_definition" "backend" {
           { name = "TENANTS_CONNECTION", value = data.aws_ssm_parameter.tenants_connection.value },
           { name = "STRIPE_PRIVATE_KEY", value = data.aws_ssm_parameter.stripe_private_key.value },
           { name = "STRIPE_WEBHOOK_SECRET", value = data.aws_ssm_parameter.stripe_webhook_secret.value }
-        ] : []
+        ]
+        
         # 如果 var.environment 不是 "prod"，则不设置任何环境变量
 
 
@@ -205,7 +206,7 @@ resource "aws_ecs_task_definition" "backend" {
           "options" : {
             "awslogs-group" : "${var.cloudwatch_group_name}",
             "awslogs-region" : "${var.region}",
-            "awslogs-stream-prefix" : "ecs"
+            "awslogs-stream-prefix" : "ecs-${var.environment}"
           }
         }
       }

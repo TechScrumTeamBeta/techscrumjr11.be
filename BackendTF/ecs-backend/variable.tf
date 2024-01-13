@@ -26,3 +26,19 @@ variable "imageURI" {}
 variable "k8s_cluster_name" {
   
 }
+
+variable "sns_email" {
+  description = "sns email"
+  type        = string
+}
+variable "task_min_count" {
+  description = "min count of tasks"
+  type        = number
+  default     = 2
+}
+
+variable "task_max_count" {
+  description = "min count of tasks"
+  type        = number
+  default     = 4
+}

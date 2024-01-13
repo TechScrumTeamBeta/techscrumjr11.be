@@ -53,12 +53,12 @@ module "iam" {
 
 # Create cloudwatch group
 module "cloudwatch" {
-  source      = "../../modules/cloudwatch"
-  projectName = var.projectName
-  environment = var.environment
-  cluster_name= var.cluster_name
+  source         = "../../modules/cloudwatch"
+  projectName    = var.projectName
+  environment    = var.environment
+  cluster_name   = var.cluster_name
   alb_arn_suffix = module.application_load_balancer.alb_arn_suffix
-  sns_email   = var.sns_email
+  sns_email      = var.sns_email
 
 }
 
@@ -68,18 +68,18 @@ module "ecs" {
   cluster_name           = var.cluster_name
   ecs_execution_role_arn = module.iam.ecs_execution_role_arn
   task_role_arn          = module.iam.ecs_task_role_arn
-  task_definition_arn    = module.ecs.task_definition_arn
-  target_group_arn       = module.application_load_balancer.target_group_arn
-  public_subnets_ids     = module.networking.public_subnets_ids
-  private_subnets_ids    = module.networking.private_subnets_ids
-  ecs_security_group_id  = module.security_group.ecs_security_group_id
-  alb_security_group_id  = module.security_group.alb_security_group_id
-  projectName            = var.projectName
-  cloudwatch_group_name  = module.cloudwatch.cloudwatch_group_name
-  region                 = var.region
-  environment            = var.environment
-  imageURI               = var.imageURI
-  depends_on             = [module.iam]
+  # task_definition_arn    = module.ecs.task_definition_arn
+  target_group_arn      = module.application_load_balancer.target_group_arn
+  public_subnets_ids    = module.networking.public_subnets_ids
+  private_subnets_ids   = module.networking.private_subnets_ids
+  ecs_security_group_id = module.security_group.ecs_security_group_id
+  alb_security_group_id = module.security_group.alb_security_group_id
+  projectName           = var.projectName
+  cloudwatch_group_name = module.cloudwatch.cloudwatch_group_name
+  region                = var.region
+  environment           = var.environment
+  imageURI              = var.imageURI
+  depends_on            = [module.iam]
 }
 
 # Create route53

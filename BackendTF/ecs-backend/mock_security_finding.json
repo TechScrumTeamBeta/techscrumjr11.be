@@ -1,0 +1,38 @@
+{
+  "Findings": [
+    {
+      "SchemaVersion": "2018-10-08",
+      "Id": "arn:aws:securityhub:ap-southeast-2:650635451238:subscription/aws-foundational-security-best-practices/v/1.0.0/S3.1/finding/1f8a1e7b-9b70-4e88-9c08-650635451238",
+      "ProductArn": "arn:aws:securityhub:ap-southeast-2:650635451238:product/aws/securityhub",
+      "GeneratorId": "aws-foundational-security-best-practices/v/1.0.0/S3.1",
+      "AwsAccountId": "650635451238",
+      "Types": ["Software and Configuration Checks"],
+      "FirstObservedAt": "2021-01-01T00:00:00.000Z",
+      "LastObservedAt": "2021-01-01T00:00:00.000Z",
+      "CreatedAt": "2021-01-01T00:00:00.000Z",
+      "UpdatedAt": "2021-01-01T00:00:00.000Z",
+      "Severity": {
+        "Product": 7.5,
+        "Label": "CRITICAL"
+      },
+      "Title": "Mock Finding for Testing",
+      "Description": "This is a mock finding for testing purposes",
+      "Resources": [
+        {
+          "Type": "AwsS3Bucket",
+          "Id": "arn:aws:s3:::example-bucket",
+          "Partition": "aws",
+          "Region": "ap-southeast-2",
+          "Details": {
+            "AwsS3Bucket": {
+              "Owner": {
+                "DisplayName": "fisherinaus@example.com"
+              },
+              "AccessControlList": "mock-acl"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

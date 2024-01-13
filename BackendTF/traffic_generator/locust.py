@@ -9,11 +9,11 @@ class WebsiteUser(HttpUser):
 
     @task
     def visit_api_docs(self):
-        self.client.get("https://qa-api.techscrumjr11.com/api-docs", name="Visit API Docs Page")
+        self.client.get("https://uat-api.techscrumjr11.com/api-docs", name="Visit API Docs Page")
 
     @task
     def visit_api_root(self):
-        self.client.get("https://qa-api.techscrumjr11.com/", name="Visit API Root")
+        self.client.get("https://uat-api.techscrumjr11.com/", name="Visit API Root")
 
     @task
     def visit_health_check(self):

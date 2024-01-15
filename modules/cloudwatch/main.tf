@@ -60,7 +60,7 @@ resource "aws_route53_health_check" "health_check_http" {
   fqdn              = var.healthcheck_domain_name
   port              = 80
   type              = "HTTP"
-  resource_path     = "/"
+  resource_path     = "/api/v2/healthcheck"
   failure_threshold = "5"
   request_interval  = "30"
   tags = {
@@ -78,6 +78,7 @@ resource "aws_route53_health_check" "health_check_https" {
   fqdn              = var.healthcheck_domain_name
   port              = 443
   type              = "HTTPS"
+   resource_path     = "/api/v2/healthcheck"
   request_interval  = 30
   failure_threshold = 3
   tags = {

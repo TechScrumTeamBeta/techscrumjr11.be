@@ -59,6 +59,8 @@ module "cloudwatch" {
   cluster_name   = var.cluster_name
   alb_arn_suffix = module.application_load_balancer.alb_arn_suffix
   sns_email      = var.sns_email
+  healthcheck_domain_name = var.healthcheck_domain_name
+
 
 }
 

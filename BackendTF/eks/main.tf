@@ -24,7 +24,10 @@ module "eks" {
   source                            = "../../modules/eks"
   projectName                       = var.projectName
   environment                       = var.environment
-  public_subnets_ids                = module.networking.public_subnets_ids
+  public_subnets_ids                = var.public_subnet_cidrs
+  private_subnets_ids                = var.private_subnet_cidrs
+  # public_subnets_ids                = module.networking.public_subnets_ids
+  # private_subnets_ids                = module.networking.private_subnets_ids
   instance_types                    = var.instance_types
   cluster_version                   = var.cluster_version
   k8s_cluster_name                  = var.k8s_cluster_name

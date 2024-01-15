@@ -42,3 +42,7 @@ variable "task_max_count" {
   type        = number
   default     = 4
 }
+
+variable "healthcheck_domain_name" {
+    description = "healtcheck of backend"
+}

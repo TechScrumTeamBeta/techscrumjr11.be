@@ -1,6 +1,7 @@
 variable "projectName" {}
 variable "environment" {}
 variable "public_subnets_ids" {}
+variable "private_subnets_ids" {}
 variable "instance_types" {}
 variable "cluster_version" {}
 variable "k8s_cluster_name" {}

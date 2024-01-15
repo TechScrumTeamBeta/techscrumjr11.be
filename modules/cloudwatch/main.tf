@@ -7,17 +7,97 @@ resource "aws_cloudwatch_log_group" "log_group_ecs_fargate" {
   }
 }
 
+resource "aws_sns_topic" "route53_sns" {
+  name = "${var.projectName}-backend-sns"
+}
+
+resource "aws_sns_topic_subscription" "user_updates" {
+  topic_arn = aws_sns_topic.route53_sns.arn
+  protocol  = "email"
+  endpoint  = var.sns_email
+}
+
+resource "aws_cloudwatch_metric_alarm" "https_health_check_alarm" {
+ 
+  alarm_name          = var.https_health_check_alarm_name
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "HealthCheckStatus"
+  namespace           = "AWS/Route53"
+  period              = "60"
+  statistic           = "Minimum"
+  threshold           = "1"
+  alarm_description   = "This metric checks the health status of the endpoint's https"
+  alarm_actions       = [aws_sns_topic.route53_sns.arn]
+  dimensions = {
+    HealthCheckId = aws_route53_health_check.health_check_https.id
+  }
+}
+
+
+
+resource "aws_cloudwatch_metric_alarm" "http_health_check_alarm" {
+ 
+  alarm_name          = var.http_health_check_alarm_name
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "HealthCheckStatus"
+  namespace           = "AWS/Route53"
+  period              = "60"
+  statistic           = "Minimum"
+  threshold           = "1"
+  alarm_description   = "This metric checks the health status of the endpoint's http"
+  alarm_actions       = [aws_sns_topic.route53_sns.arn]
+  dimensions = {
+    HealthCheckId = aws_route53_health_check.health_check_http.id
+  }
+}
+
+
+# http healthcheck
+resource "aws_route53_health_check" "health_check_http" {
+
+  fqdn              = var.healthcheck_domain_name
+  port              = 80
+  type              = "HTTP"
+  resource_path     = "/"
+  failure_threshold = "5"
+  request_interval  = "30"
+  tags = {
+    Name = var.http_health_check_name
+  }
+}
+
+
+
+
+
+#https healthcheck
+resource "aws_route53_health_check" "health_check_https" {
+  # provider          = aws.us-east-1
+  fqdn              = var.healthcheck_domain_name
+  port              = 443
+  type              = "HTTPS"
+  request_interval  = 30
+  failure_threshold = 3
+  tags = {
+    Name = var.https_health_check_name
+  }
+}
+
+
+
 
 ///create sns  alb的sns
 resource "aws_sns_topic" "backend_sns" {
   name = "${var.projectName}-backend-sns"
 }
 
-resource "aws_sns_topic_subscription" "user_updates" {
-  topic_arn = aws_sns_topic.backend_sns.arn
-  protocol  = "email"
-  endpoint  = var.sns_email
-}
+# resource "aws_sns_topic_subscription" "user_updates" {
+#   topic_arn = aws_sns_topic.backend_sns.arn
+#   protocol  = "email"
+#   endpoint  = var.sns_email
+# }
 
 ///alb alarm   后续修改alb name  从moudle里面拿。.
 resource "aws_cloudwatch_metric_alarm" "alb_4xx_alarm" {

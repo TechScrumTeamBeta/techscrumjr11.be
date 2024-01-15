@@ -4,7 +4,7 @@ resource "aws_eks_node_group" "nodes" {
   node_group_name = "${var.projectName}-node"
   node_role_arn = var.nodes_arn
   subnet_ids = var.public_subnets_ids
-  
+    # subnet_ids = var.private_subnets_ids
   scaling_config {
     desired_size = 3
     max_size = 5
